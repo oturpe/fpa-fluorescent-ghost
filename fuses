@@ -1,0 +1,4 @@
+mcu=t2313
+programmer=avrisp
+
+sudo avrdude -c ${programmer} -p ${mcu} -b 19200 -P /dev/ttyACM0 -U lfuse:w:0x64:m -U hfuse:w:0xd9:m -U efuse:w:0x01:m
