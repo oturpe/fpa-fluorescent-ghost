@@ -1,9 +1,7 @@
 // Fluorescent ghost
 //
-// Firmware for attiny2313 based ac motor controller. Detects the upright
-// position of the motor by rotating shaft contacting a button and afterwards
-// waits for the sand in hourglass to move, then rotates the hourglass 180
-// degrees again.
+// Firmware for controller for series of relays, with the intent to sequence
+// fluorescent lights to make a ghost appear and disappear again.
 //
 // Author: Otto Urpelainen
 // Email: oturpe@iki.fi
@@ -26,12 +24,21 @@ void setIndicator(bool lit) {
         PORTD &= ~BV(PORTD6);
 }
 
+enum MouthState {
+    BIG,
+    SMALL,
+    TINY
+};
+
 int main() {
     // Set output pinn
     //    D6 (indicator)
-    //    B0, B1 (eye relays)
+    //    B0, B1, B2, B3 (relays)
     DDRD |= BV(DDD6);
-    DDRB |= BV(DDB0) | BV(DDB1);
+    DDRB |= BV(DDB0) | BV(DDB1) | BV(DDB2) | BV(DDB3);
+
+    // The relay is open when relative output is high. Open all relays initially
+    PORTB = 0xff;
 
     uint16_t counter = 0;
     uint16_t leftEyeCounter = 0;
@@ -39,6 +46,8 @@ int main() {
     bool indicatorLit = 0;
     bool leftEyeLit = false;
     bool rightEyeLit = false;
+    MouthState mouthState = TINY;
+    uint16_t mouthCounter = 0;
 
     while(true) {
         counter += 1;
@@ -72,5 +81,36 @@ int main() {
             rightEyeCounter = 0;
         }
         rightEyeCounter++;
+
+        switch (mouthState) {
+        case BIG:
+            if (mouthCounter == MOUTH_BIG_PERIOD) {
+                PORTB |= BV(PORTB4);
+                PORTB &= ~BV(PORTB2);
+                mouthState = SMALL;
+                mouthCounter = 0;
+            }
+            break;
+        case SMALL:
+            if (mouthCounter == MOUTH_SMALL_PERIOD) {
+                PORTB |= BV(PORTB2);
+                PORTB &= ~BV(PORTB3);
+                mouthState = TINY;
+                mouthCounter = 0;
+            }
+            break;
+        case TINY:
+            if (mouthCounter == MOUTH_TINY_PERIOD) {
+                PORTB |= BV(PORTB3);
+                PORTB &= ~BV(PORTB4);
+                mouthState = BIG;
+                mouthCounter = 0;
+            }
+            break;
+        }
+
+        mouthCounter++;
+
+
     }
 }

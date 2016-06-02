@@ -13,3 +13,8 @@
 #define EYE_LEFT_ON_PERIOD 50
 #define EYE_RIGHT_OFF_PERIOD 74
 #define EYE_RIGHT_ON_PERIOD 68
+
+// Mouth periods
+#define MOUTH_BIG_PERIOD 80
+#define MOUTH_SMALL_PERIOD 80
+#define MOUTH_TINY_PERIOD 80
