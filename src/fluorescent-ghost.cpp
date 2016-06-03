@@ -33,19 +33,24 @@ enum MouthState {
 int main() {
     // Set output pinn
     //    D6 (indicator)
-    //    B0, B1, B2, B3 (relays)
-    DDRD |= BV(DDD6);
+    //    D0, D1 (left and right eye relays)
+    //    B0, B1, B2 (tiny, small and big mouth relays)
+    //    B3 (outline relay)
+    DDRD |= BV(DDD0) | BV(DDD1) | BV(DDD6);
     DDRB |= BV(DDB0) | BV(DDB1) | BV(DDB2) | BV(DDB3);
 
     // The relay is open when relative output is high. Open all relays initially
     PORTB = 0xff;
+    PORTD = 0xff;
 
     uint16_t counter = 0;
     uint16_t leftEyeCounter = 0;
     uint16_t rightEyeCounter = 0;
+    uint16_t outlineCounter = 0;
     bool indicatorLit = 0;
     bool leftEyeLit = false;
     bool rightEyeLit = false;
+    bool outlineLit = false;
     MouthState mouthState = TINY;
     uint16_t mouthCounter = 0;
 
@@ -59,50 +64,62 @@ int main() {
         }
 
         if (leftEyeLit && leftEyeCounter == EYE_LEFT_ON_PERIOD) {
-            PORTB |= BV(PORTB0);
+            PORTD |= BV(PORTD0);
             leftEyeLit = false;
             leftEyeCounter = 0;
         }
         else if (!leftEyeLit && leftEyeCounter == EYE_LEFT_OFF_PERIOD) {
-            PORTB &= ~BV(PORTB0);
+            PORTD &= ~BV(PORTD0);
             leftEyeLit = true;
             leftEyeCounter = 0;
         }
         leftEyeCounter++;
 
         if (rightEyeLit && rightEyeCounter == EYE_RIGHT_ON_PERIOD) {
-            PORTB |= BV(PORTB1);
+            PORTD |= BV(PORTD1);
             rightEyeLit = false;
             rightEyeCounter = 0;
         }
         else if (!rightEyeLit && rightEyeCounter == EYE_RIGHT_OFF_PERIOD) {
-            PORTB &= ~BV(PORTB1);
+            PORTD &= ~BV(PORTD1);
             rightEyeLit = true;
             rightEyeCounter = 0;
         }
         rightEyeCounter++;
 
+        if (outlineLit && outlineCounter == OUTLINE_ON_PERIOD) {
+            PORTB |= BV(PORTB3);
+            outlineLit = false;
+            outlineCounter = 0;
+        }
+        else if (!outlineLit && outlineCounter == OUTLINE_OFF_PERIOD) {
+            PORTB &= ~BV(PORTB3);
+            outlineLit = true;
+            outlineCounter = 0;
+        }
+        outlineCounter++;
+
         switch (mouthState) {
         case BIG:
             if (mouthCounter == MOUTH_BIG_PERIOD) {
-                PORTB |= BV(PORTB4);
-                PORTB &= ~BV(PORTB2);
+                PORTB |= BV(PORTB2);
+                PORTB &= ~BV(PORTB1);
                 mouthState = SMALL;
                 mouthCounter = 0;
             }
             break;
         case SMALL:
             if (mouthCounter == MOUTH_SMALL_PERIOD) {
-                PORTB |= BV(PORTB2);
-                PORTB &= ~BV(PORTB3);
+                PORTB |= BV(PORTB1);
+                PORTB &= ~BV(PORTB0);
                 mouthState = TINY;
                 mouthCounter = 0;
             }
             break;
         case TINY:
             if (mouthCounter == MOUTH_TINY_PERIOD) {
-                PORTB |= BV(PORTB3);
-                PORTB &= ~BV(PORTB4);
+                PORTB |= BV(PORTB0);
+                PORTB &= ~BV(PORTB2);
                 mouthState = BIG;
                 mouthCounter = 0;
             }
