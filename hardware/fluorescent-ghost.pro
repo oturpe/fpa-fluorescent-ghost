@@ -1,4 +1,4 @@
-update=to  2. kesäkuuta 2016 02.03.30
+update=to  2. kesäkuuta 2016 17.38.16
 version=1
 last_client=kicad
 [pcbnew]
@@ -59,3 +59,4 @@ LibName27=atmel
 LibName28=contrib
 LibName29=valves
 LibName30=oturpe-kicad-lib
+LibName31=kicad/relays
